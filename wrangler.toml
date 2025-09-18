@@ -13,7 +13,7 @@ SHOPIFY_APP_URL = "https://shopify-poc.pages.dev"
 [[d1_databases]]
 binding = "DB"
 database_name = "shopify_poc"
-database_id = "00000000-0000-0000-0000-000000000000" # TODO: replace with real D1 database id
+database_id = "1b84d358-7ace-4349-95ea-d8075b61a6a4"
 
 [env.production]
 name = "shopify-poc"
@@ -26,7 +26,7 @@ SHOPIFY_APP_URL = "https://shopify-poc.pages.dev"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "shopify_poc"
-database_id = "00000000-0000-0000-0000-000000000000" # TODO: replace with real D1 database id
+database_id = "1b84d358-7ace-4349-95ea-d8075b61a6a4"
 
 [observability]
 enabled = true
