@@ -3,11 +3,30 @@ name = "shopify-poc"
 compatibility_date = "2024-09-23"
 pages_build_output_dir = "./build/client"
 
+[vars]
+APP_URL = "https://shopify-poc.pages.dev"
+SHOPIFY_API_KEY = ""
+SHOPIFY_API_SECRET = ""
+SESSION_HMAC_SECRET = ""
+SHOPIFY_APP_URL = "https://shopify-poc.pages.dev"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "shopify_poc"
+database_id = "00000000-0000-0000-0000-000000000000" # TODO: replace with real D1 database id
+
 [env.production]
 name = "shopify-poc"
 
 [env.production.vars]
 NODE_ENV = "production"
+APP_URL = "https://shopify-poc.pages.dev"
+SHOPIFY_APP_URL = "https://shopify-poc.pages.dev"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "shopify_poc"
+database_id = "00000000-0000-0000-0000-000000000000" # TODO: replace with real D1 database id
 
 [observability]
 enabled = true

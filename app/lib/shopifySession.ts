@@ -1,11 +1,9 @@
-// Session-based auth for Shopify embedded apps
+// Session utilities for the embedded Shopify app
 export interface ShopifySession {
   shop: string;
-  accessToken?: string;
   sessionToken?: string;
   isEmbedded: boolean;
   expiresAt?: number;
-  scope?: string;
 }
 
 export interface SessionAuthResult {
@@ -16,23 +14,23 @@ export interface SessionAuthResult {
   error?: string;
 }
 
-// Detect if app is running in Shopify admin iframe
+// Detect if app is running inside Shopify's embedded iframe
 export const isEmbeddedApp = (): boolean => {
   try {
     return window.parent !== window && window.location !== window.parent.location;
   } catch {
-    return true; // Assume embedded if we can't check (cross-origin restriction)
+    return true;
   }
 };
 
-// Get Shopify session from URL parameters or postMessage
+// Extract shop + session token from URL query params
 export const getShopifySessionFromContext = (): Partial<ShopifySession> | null => {
   const params = new URLSearchParams(window.location.search);
-  const shop = params.get('shop');
-  const sessionToken = params.get('session');
-  
+  const shop = params.get("shop");
+  const sessionToken = params.get("session");
+
   if (!shop) return null;
-  
+
   return {
     shop,
     sessionToken: sessionToken || undefined,
@@ -41,102 +39,78 @@ export const getShopifySessionFromContext = (): Partial<ShopifySession> | null =
 };
 
 // Storage keys
-const SESSION_KEY = 'shopify_session';
-const LAST_VALID_SESSION_KEY = 'shopify_last_valid_session';
+const SESSION_KEY = "shopify_session";
+const LAST_VALID_SESSION_KEY = "shopify_last_valid_shop";
 
-// Save session to browser storage
 export const saveSession = (session: ShopifySession): void => {
   try {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    // Also save to localStorage as backup
-    if (session.accessToken) {
-      localStorage.setItem(LAST_VALID_SESSION_KEY, JSON.stringify({
-        shop: session.shop,
-        timestamp: Date.now(),
-      }));
-    }
+    localStorage.setItem(
+      LAST_VALID_SESSION_KEY,
+      JSON.stringify({ shop: session.shop, timestamp: Date.now() })
+    );
   } catch (error) {
-    console.warn('Failed to save session:', error);
+    console.warn("Failed to save session", error);
   }
 };
 
-// Load session from browser storage
 export const loadSession = (): ShopifySession | null => {
   try {
-    const sessionData = sessionStorage.getItem(SESSION_KEY);
-    if (sessionData) {
-      const session = JSON.parse(sessionData) as ShopifySession;
-      
-      // Check if session is expired
-      if (session.expiresAt && Date.now() > session.expiresAt) {
-        clearSession();
-        return null;
-      }
-      
-      return session;
+    const data = sessionStorage.getItem(SESSION_KEY);
+    if (!data) return null;
+    const parsed = JSON.parse(data) as ShopifySession;
+    if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
+      clearSession();
+      return null;
     }
+    return parsed;
   } catch (error) {
-    console.warn('Failed to load session:', error);
+    console.warn("Failed to load session", error);
+    return null;
   }
-  
-  return null;
 };
 
-// Clear current session
 export const clearSession = (): void => {
   try {
     sessionStorage.removeItem(SESSION_KEY);
   } catch (error) {
-    console.warn('Failed to clear session:', error);
+    console.warn("Failed to clear session", error);
   }
 };
 
-// Get last known valid shop from localStorage
 export const getLastValidShop = (): string | null => {
   try {
-    const lastSession = localStorage.getItem(LAST_VALID_SESSION_KEY);
-    if (lastSession) {
-      const data = JSON.parse(lastSession);
-      // Only return if it's recent (within 30 days)
-      if (Date.now() - data.timestamp < 30 * 24 * 60 * 60 * 1000) {
-        return data.shop;
-      }
+    const value = localStorage.getItem(LAST_VALID_SESSION_KEY);
+    if (!value) return null;
+    const parsed = JSON.parse(value) as { shop: string; timestamp: number };
+    if (Date.now() - parsed.timestamp > 30 * 24 * 60 * 60 * 1000) {
+      return null;
     }
+    return parsed.shop;
   } catch (error) {
-    console.warn('Failed to get last valid shop:', error);
+    console.warn("Failed to read last valid shop", error);
+    return null;
   }
-  
-  return null;
 };
 
-// Check if session needs refresh
 export const shouldRefreshSession = (session: ShopifySession): boolean => {
   if (!session.expiresAt) return false;
-  
-  // Refresh if expires within next 5 minutes
-  const refreshThreshold = 5 * 60 * 1000;
-  return Date.now() + refreshThreshold > session.expiresAt;
+  const threshold = 5 * 60 * 1000; // 5 minutes
+  return Date.now() + threshold > session.expiresAt;
 };
 
-// Create session from Prisma session data (fallback)
-export const createSessionFromPrismaSession = (sessionData: any): ShopifySession => {
-  return {
-    shop: sessionData.shop,
-    accessToken: sessionData.accessToken,
-    isEmbedded: false, // This is fallback/direct access
-    expiresAt: sessionData.expires ? new Date(sessionData.expires).getTime() : Date.now() + (24 * 60 * 60 * 1000), // 24h expiry
-    scope: sessionData.scope,
-  };
-};
-
-// Generate OAuth URL
-export const generateOAuthUrl = (shop: string, clientId: string, scopes: string[], redirectUri: string): string => {
+export const generateOAuthUrl = (
+  shop: string,
+  clientId: string,
+  scopes: string[],
+  redirectUri: string,
+  state: string,
+): string => {
   const params = new URLSearchParams({
     client_id: clientId,
-    scope: scopes.join(','),
+    scope: scopes.join(","),
     redirect_uri: redirectUri,
-    state: crypto.randomUUID(),
+    state,
   });
-  
   return `https://${shop}/admin/oauth/authorize?${params.toString()}`;
 };

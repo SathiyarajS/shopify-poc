@@ -7,7 +7,10 @@
       "Bash(npm run build:*)",
       "Bash(npm run deploy:*)",
       "Bash(npx wrangler:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run env:*)",
+      "Bash(shopify app:*)"
     ],
     "deny": [],
     "ask": []
