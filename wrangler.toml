@@ -4,11 +4,7 @@ compatibility_date = "2024-09-23"
 pages_build_output_dir = "./build/client"
 
 [vars]
-APP_URL = "https://shopify-poc.pages.dev"
-SHOPIFY_API_KEY = ""
-SHOPIFY_API_SECRET = ""
-SESSION_HMAC_SECRET = ""
-SHOPIFY_APP_URL = "https://shopify-poc.pages.dev"
+# Secrets are now managed via wrangler pages secret put
 
 [[d1_databases]]
 binding = "DB"
@@ -20,8 +16,7 @@ name = "shopify-poc"
 
 [env.production.vars]
 NODE_ENV = "production"
-APP_URL = "https://shopify-poc.pages.dev"
-SHOPIFY_APP_URL = "https://shopify-poc.pages.dev"
+# Secrets are now managed via wrangler pages secret put
 
 [[env.production.d1_databases]]
 binding = "DB"
