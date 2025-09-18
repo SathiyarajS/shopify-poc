@@ -2,7 +2,7 @@
 
 client_id = "6edb868d99f098206f257723a04fa68d"
 name = "poc"
-application_url = "https://example.com"
+application_url = "https://shopify-poc.pages.dev"
 embedded = true
 
 [build]
@@ -24,4 +24,4 @@ api_version = "2025-10"
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://shopify-poc.pages.dev/api/auth", "https://shopify-poc.pages.dev/auth/shopify/callback" ]
