@@ -11,6 +11,7 @@ This project now targets the Cloudflare Pages + Workers stack for authentication
 - Run `wrangler d1 migrations apply shopify_poc` (or the actual DB name) to apply the schema in `migrations/0001_init.sql` before using the app.
 - OAuth callback lives at `/auth/shopify/callback` and stores install metadata in `app_install_state`.
 - The React client calls `/api/session/refresh` to obtain signed session tokens and `/api/shopify/graphql` proxies requests to the Admin API using the stored merchant token.
+- Natural-language planning is served from `/api/plan`, which validates requests/responses with Zod schemas (`shared/planning/schemas.ts`) and currently handles price, tag, inventory, and status intents with clarify codes for ambiguous input.
 
 Visit the [`shopify.dev` documentation](https://shopify.dev/docs/api/shopify-app-remix) for general Remix app guidance, but note that this project diverges from the stock template for auth/storage.
 
