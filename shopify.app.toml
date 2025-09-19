@@ -2,7 +2,7 @@
 
 # Using previous working client_id temporarily
 client_id = "5810fe1357c5113bec8e8dec0ed9e374"
-name = "shopify-poc-v2"
+name = "poc-v2"
 application_url = "https://shopify-poc.pages.dev"
 embedded = true
 

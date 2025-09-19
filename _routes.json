@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "include": [
+    "/auth/shopify/callback",
+    "/api/session/refresh", 
+    "/api/shopify/graphql",
+    "/webhooks/*",
+    "/app*"
+  ],
+  "exclude": []
+}
