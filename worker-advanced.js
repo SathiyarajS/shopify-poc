@@ -91,6 +91,17 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     
+    // Check if this is an embedded app request from Shopify admin
+    const shop = url.searchParams.get('shop');
+    const embedded = url.searchParams.get('embedded') === '1';
+    const sessionToken = url.searchParams.get('id_token');
+    const hmac = url.searchParams.get('hmac');
+    
+    // If we have Shopify parameters on root, handle as app
+    if (url.pathname === '/' && (shop || embedded || sessionToken || hmac)) {
+      return handleApp(request, env);
+    }
+    
     // Basic routing
     if (url.pathname === '/') {
       return handleHome(request, env);
@@ -283,6 +294,16 @@ async function handleApp(request, env) {
   const sessionToken = url.searchParams.get('id_token'); // JWT session token from Shopify
   const hmac = url.searchParams.get('hmac');
   const embedded = url.searchParams.get('embedded') === '1';
+  
+  // Debug logging
+  console.log('App request:', {
+    shop,
+    embedded,
+    hasSessionToken: !!sessionToken,
+    hasHmac: !!hmac,
+    pathname: url.pathname,
+    search: url.search
+  });
   
   if (!shop) {
     return new Response('Missing shop parameter', { status: 400 });

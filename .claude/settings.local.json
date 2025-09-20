@@ -30,7 +30,8 @@
       "Bash(echo:*)",
       "Bash(wrangler dev:*)",
       "Bash(wrangler deploy:*)",
-      "Bash(wrangler d1 execute:*)"
+      "Bash(wrangler d1 execute:*)",
+      "Bash(wrangler tail:*)"
     ],
     "deny": [],
     "ask": []
