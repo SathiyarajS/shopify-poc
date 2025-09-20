@@ -22,7 +22,11 @@
       "WebFetch(domain:shopify.dev)",
       "WebSearch",
       "WebFetch(domain:e01a52d8.shopify-poc.pages.dev)",
-      "Bash(openssl rand:*)"
+      "Bash(openssl rand:*)",
+      "Bash(wrangler pages deployment create:*)",
+      "Bash(wrangler pages deployment tail:*)",
+      "Bash(chmod:*)",
+      "Bash(./setup-cloudflare.sh:*)"
     ],
     "deny": [],
     "ask": []

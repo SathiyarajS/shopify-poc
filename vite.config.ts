@@ -42,6 +42,7 @@ export default defineConfig({
   ssr: {
     target: "webworker",
     noExternal: true,
+    external: ["stream", "crypto", "buffer", "util", "path", "fs", "os"],
   },
   server: {
     allowedHosts: [host],

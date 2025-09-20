@@ -1,4 +1,4 @@
-import "@shopify/shopify-app-remix/adapters/node";
+// No adapter needed for Cloudflare Pages
 import {
   ApiVersion,
   AppDistribution,
