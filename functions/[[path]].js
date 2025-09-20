@@ -10,8 +10,6 @@ let handler = null;
 
 async function getHandler(context) {
   if (!handler) {
-    console.log('Setting up environment variables...');
-    
     // Set up environment variables in process.env
     process.env.SHOPIFY_API_KEY = context.env.SHOPIFY_API_KEY || '';
     process.env.SHOPIFY_API_SECRET = context.env.SHOPIFY_API_SECRET || '';
@@ -31,14 +29,6 @@ async function getHandler(context) {
     // Set up global DB for Prisma
     globalThis.DB = context.env.DB;
     globalThis.env = context.env;
-    
-    console.log('Environment variables set:', {
-      SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY ? 'SET' : 'MISSING',
-      SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET ? 'SET' : 'MISSING',
-      SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL,
-      SCOPES: process.env.SCOPES,
-      DB: globalThis.DB ? 'SET' : 'MISSING'
-    });
     
     // Import build after environment is set up
     const build = await import("../build/server/index.js");
@@ -90,33 +80,11 @@ export async function onRequest(context) {
     return newResponse;
   } catch (error) {
     console.error('Function error:', error);
-    console.error('Error stack:', error.stack);
-    console.error('Environment check:', {
-      SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY ? 'SET' : 'MISSING',
-      SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET ? 'SET' : 'MISSING',
-      SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL || 'MISSING',
-      SCOPES: process.env.SCOPES || 'MISSING',
-      SESSION_HMAC_SECRET: process.env.SESSION_HMAC_SECRET ? 'SET' : 'MISSING',
-      DB: globalThis.DB ? 'SET' : 'MISSING'
-    });
     
-    // Return a more detailed error response for debugging
-    const errorResponse = {
-      error: error.message,
-      stack: error.stack?.split('\n').slice(0, 5).join('\n'),
-      env_check: {
-        SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY ? 'SET' : 'MISSING',
-        SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET ? 'SET' : 'MISSING',
-        SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL || 'MISSING',
-        SCOPES: process.env.SCOPES || 'MISSING',
-        DB: globalThis.DB ? 'SET' : 'MISSING'
-      }
-    };
-    
-    return new Response(JSON.stringify(errorResponse, null, 2), { 
+    return new Response('Internal Server Error', { 
       status: 500,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain',
         'Content-Security-Policy': 'frame-ancestors https://*.myshopify.com https://admin.shopify.com;',
         'X-Frame-Options': 'ALLOWALL'
       }

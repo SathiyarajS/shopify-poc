@@ -34,33 +34,7 @@ export default function App() {
 
 // Shopify needs Remix to catch some thrown responses, so that their headers are included in the response.
 export function ErrorBoundary() {
-  const error = useRouteError();
-  
-  // Log error details for debugging
-  console.error('App Error Boundary:', error);
-  
-  // Check if it's an environment configuration error
-  if (error instanceof Error && error.message.includes('environment variable')) {
-    return (
-      <div style={{ padding: '20px', fontFamily: 'monospace' }}>
-        <h1>Configuration Error</h1>
-        <p style={{ color: 'red' }}>{error.message}</p>
-        <details>
-          <summary>Required Environment Variables</summary>
-          <ul>
-            <li>SHOPIFY_API_KEY</li>
-            <li>SHOPIFY_API_SECRET</li>
-            <li>SHOPIFY_APP_URL</li>
-            <li>SCOPES</li>
-            <li>SESSION_HMAC_SECRET</li>
-          </ul>
-        </details>
-        <p>Please ensure these are set in Cloudflare Pages environment variables.</p>
-      </div>
-    );
-  }
-  
-  return boundary.error(error);
+  return boundary.error(useRouteError());
 }
 
 export const headers: HeadersFunction = (headersArgs) => {

@@ -132,28 +132,15 @@ function initializeShopify() {
     let scopes = process.env?.SCOPES || globalThis.SCOPES || globalThis.env?.SCOPES;
     let hmacSecret = process.env?.SESSION_HMAC_SECRET || globalThis.SESSION_HMAC_SECRET || globalThis.env?.SESSION_HMAC_SECRET;
     
-    // Log what we found for debugging
-    console.log('Shopify app initialization - Environment check:', {
-      apiKey: apiKey ? 'FOUND' : 'MISSING',
-      apiSecret: apiSecret ? 'FOUND' : 'MISSING',
-      appUrl: appUrl || 'MISSING',
-      scopes: scopes || 'MISSING',
-      hmacSecret: hmacSecret ? 'FOUND' : 'MISSING',
-      processEnvExists: typeof process !== 'undefined' && process.env,
-      globalThisEnv: globalThis.env ? 'EXISTS' : 'NOT EXISTS'
-    });
     
     // Validate required environment variables
     if (!apiKey) {
-      console.error('Missing SHOPIFY_API_KEY environment variable');
       throw new Error('SHOPIFY_API_KEY environment variable is required');
     }
     if (!apiSecret) {
-      console.error('Missing SHOPIFY_API_SECRET environment variable');
       throw new Error('SHOPIFY_API_SECRET environment variable is required');
     }
     if (!appUrl) {
-      console.error('Missing SHOPIFY_APP_URL environment variable');
       throw new Error('SHOPIFY_APP_URL environment variable is required');
     }
 

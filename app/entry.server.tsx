@@ -25,7 +25,6 @@ export default async function handleRequest(
       {
         signal: AbortSignal.timeout(streamTimeout),
         onError(error: unknown) {
-          console.error("Render error:", error);
           responseStatusCode = 500;
         },
       }
@@ -41,7 +40,6 @@ export default async function handleRequest(
       headers: responseHeaders,
     });
   } catch (error) {
-    console.error("Entry server error:", error);
     return new Response("Internal Server Error", {
       status: 500,
       headers: responseHeaders,

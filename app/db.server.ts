@@ -18,23 +18,13 @@ function createPrismaClient() {
     // Use D1 adapter in Cloudflare Workers
     const database = globalThis.DB || globalThis.env?.DB
     if (!database) {
-      console.error('D1 database binding not found. Make sure DB is bound in wrangler.toml')
-      console.error('globalThis.DB:', globalThis.DB)
-      console.error('globalThis.env:', globalThis.env)
       throw new Error('D1 database binding not found')
     }
-    console.log('Creating Prisma client with D1 adapter')
     const adapter = new PrismaD1(database)
-    return new PrismaClient({ 
-      adapter,
-      log: ['error', 'warn']
-    })
+    return new PrismaClient({ adapter })
   } else {
     // Use regular SQLite for local development
-    console.log('Creating Prisma client for local development')
-    return new PrismaClient({
-      log: ['error', 'warn']
-    })
+    return new PrismaClient()
   }
 }
 
