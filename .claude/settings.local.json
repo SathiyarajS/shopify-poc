@@ -12,7 +12,8 @@
       "Bash(npm run env:*)",
       "Bash(shopify app:*)",
       "Bash(git push:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

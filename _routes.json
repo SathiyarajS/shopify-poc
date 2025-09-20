@@ -5,7 +5,7 @@
     "/api/session/refresh", 
     "/api/shopify/graphql",
     "/webhooks/*",
-    "/app*"
+    "/app"
   ],
   "exclude": []
 }
