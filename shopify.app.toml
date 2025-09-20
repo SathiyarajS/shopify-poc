@@ -2,7 +2,7 @@
 
 client_id = "ce8bab18555211f12e95867a110eeaec"
 name = "test1"
-application_url = "https://shopify-poc.pages.dev"
+application_url = "https://shopify-worker.little-waterfall-6c86.workers.dev"
 embedded = true
 
 [build]
@@ -21,9 +21,9 @@ api_version = "2025-07"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = ""
+scopes = "read_products"
 optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [ "https://shopify-poc.pages.dev/auth/shopify/callback" ]
+redirect_urls = [ "https://shopify-worker.little-waterfall-6c86.workers.dev/auth/shopify/callback" ]

@@ -27,7 +27,9 @@
       "Bash(wrangler pages deployment tail:*)",
       "Bash(chmod:*)",
       "Bash(./setup-cloudflare.sh:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(wrangler dev:*)",
+      "Bash(wrangler deploy:*)"
     ],
     "deny": [],
     "ask": []

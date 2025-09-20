@@ -1,0 +1,20 @@
+name = "shopify-worker"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Non-secret environment variables
+
+[[d1_databases]]
+binding = "DB"
+database_name = "shopify_poc"
+database_id = "1b84d358-7ace-4349-95ea-d8075b61a6a4"
+
+[env.production]
+name = "shopify-worker"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "shopify_poc"
+database_id = "1b84d358-7ace-4349-95ea-d8075b61a6a4"
