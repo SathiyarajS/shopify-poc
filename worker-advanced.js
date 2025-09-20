@@ -438,12 +438,21 @@ async function handleApp(request, env) {
         async function fetchShopDetails() {
           try {
             const response = await fetch('/api/shop?shop=' + shop);
-            
-            if (!response.ok) {
-              throw new Error('Failed to fetch shop details');
-            }
-            
             const data = await response.json();
+            
+            // Check if re-authorization is needed
+            if (data.needsAuth) {
+              document.getElementById('shop-details').innerHTML = \`
+                <div class="error">
+                  \${data.message || 'Authorization required'}
+                  <br><br>
+                  <a href="/auth/shopify?shop=${shop}" class="auth-button" target="_top">
+                    Re-authorize App
+                  </a>
+                </div>
+              \`;
+              return;
+            }
             
             if (data.error) {
               throw new Error(data.error);
@@ -522,7 +531,10 @@ async function handleShopAPI(request, env) {
   const session = await getSession(env.DB, shop);
   
   if (!session || !session.access_token) {
-    return new Response(JSON.stringify({ error: 'No active session found' }), {
+    return new Response(JSON.stringify({ 
+      error: 'No active session found',
+      needsAuth: true 
+    }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -552,6 +564,31 @@ async function handleShopAPI(request, env) {
     
     const result = await shopifyGraphQL(shop, session.access_token, query);
     
+    // Check if the response indicates an authentication error
+    if (result.errors && result.errors.some(e => 
+      e.message.includes('access token') || 
+      e.message.includes('unauthorized') ||
+      e.message.includes('401'))) {
+      
+      console.log('Access token invalid, needs re-authorization');
+      
+      // Mark session as expired in database
+      await env.DB.prepare(`
+        UPDATE sessions 
+        SET expires_at = ? 
+        WHERE id = ?
+      `).bind(Math.floor(Date.now() / 1000), session.id).run();
+      
+      return new Response(JSON.stringify({ 
+        error: 'Access token invalid',
+        needsAuth: true,
+        message: 'Your session has expired. Please re-authorize the app.'
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    
     return new Response(JSON.stringify(result), {
       headers: { 
         'Content-Type': 'application/json',
@@ -560,6 +597,19 @@ async function handleShopAPI(request, env) {
     });
   } catch (error) {
     console.error('GraphQL error:', error);
+    
+    // If it's a 401/403 error, trigger re-auth
+    if (error.message.includes('401') || error.message.includes('403')) {
+      return new Response(JSON.stringify({ 
+        error: 'Authentication required',
+        needsAuth: true,
+        message: 'Please re-authorize the app to continue.'
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    
     return new Response(JSON.stringify({ 
       error: error.message,
       details: 'Failed to fetch shop details from Shopify'
