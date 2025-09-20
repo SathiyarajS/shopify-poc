@@ -10,15 +10,35 @@ let handler = null;
 
 async function getHandler(context) {
   if (!handler) {
-    // Set up environment variables
+    console.log('Setting up environment variables...');
+    
+    // Set up environment variables in process.env
     process.env.SHOPIFY_API_KEY = context.env.SHOPIFY_API_KEY || '';
     process.env.SHOPIFY_API_SECRET = context.env.SHOPIFY_API_SECRET || '';
     process.env.SHOPIFY_APP_URL = context.env.SHOPIFY_APP_URL || '';
     process.env.SCOPES = context.env.SCOPES || '';
     process.env.SESSION_HMAC_SECRET = context.env.SESSION_HMAC_SECRET || '';
+    process.env.NODE_ENV = context.env.NODE_ENV || 'production';
+    
+    // Also set them globally for Cloudflare Workers
+    globalThis.SHOPIFY_API_KEY = context.env.SHOPIFY_API_KEY;
+    globalThis.SHOPIFY_API_SECRET = context.env.SHOPIFY_API_SECRET;
+    globalThis.SHOPIFY_APP_URL = context.env.SHOPIFY_APP_URL;
+    globalThis.SCOPES = context.env.SCOPES;
+    globalThis.SESSION_HMAC_SECRET = context.env.SESSION_HMAC_SECRET;
+    globalThis.NODE_ENV = context.env.NODE_ENV || 'production';
     
     // Set up global DB for Prisma
     globalThis.DB = context.env.DB;
+    globalThis.env = context.env;
+    
+    console.log('Environment variables set:', {
+      SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY ? 'SET' : 'MISSING',
+      SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET ? 'SET' : 'MISSING',
+      SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL,
+      SCOPES: process.env.SCOPES,
+      DB: globalThis.DB ? 'SET' : 'MISSING'
+    });
     
     // Import build after environment is set up
     const build = await import("../build/server/index.js");
@@ -29,6 +49,9 @@ async function getHandler(context) {
       getLoadContext: (context) => ({
         env: context.env,
         DB: context.env.DB,
+        cloudflare: {
+          env: context.env,
+        },
       }),
     });
   }
@@ -68,14 +91,34 @@ export async function onRequest(context) {
   } catch (error) {
     console.error('Function error:', error);
     console.error('Error stack:', error.stack);
+    console.error('Environment check:', {
+      SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY ? 'SET' : 'MISSING',
+      SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET ? 'SET' : 'MISSING',
+      SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL || 'MISSING',
+      SCOPES: process.env.SCOPES || 'MISSING',
+      SESSION_HMAC_SECRET: process.env.SESSION_HMAC_SECRET ? 'SET' : 'MISSING',
+      DB: globalThis.DB ? 'SET' : 'MISSING'
+    });
     
-    return new Response(JSON.stringify({
+    // Return a more detailed error response for debugging
+    const errorResponse = {
       error: error.message,
-      stack: error.stack?.split('\n').slice(0, 5).join('\n')
-    }, null, 2), { 
+      stack: error.stack?.split('\n').slice(0, 5).join('\n'),
+      env_check: {
+        SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY ? 'SET' : 'MISSING',
+        SHOPIFY_API_SECRET: process.env.SHOPIFY_API_SECRET ? 'SET' : 'MISSING',
+        SHOPIFY_APP_URL: process.env.SHOPIFY_APP_URL || 'MISSING',
+        SCOPES: process.env.SCOPES || 'MISSING',
+        DB: globalThis.DB ? 'SET' : 'MISSING'
+      }
+    };
+    
+    return new Response(JSON.stringify(errorResponse, null, 2), { 
       status: 500,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Content-Security-Policy': 'frame-ancestors https://*.myshopify.com https://admin.shopify.com;',
+        'X-Frame-Options': 'ALLOWALL'
       }
     });
   }

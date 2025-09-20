@@ -125,12 +125,23 @@ let shopify: any = null;
 // Initialize shopify app instance with environment variables from request context
 function initializeShopify() {
   if (!shopify) {
-    // In Cloudflare Pages, env vars might be in global context
-    const env = typeof process !== 'undefined' ? process.env : globalThis;
+    // Try multiple sources for env vars in Cloudflare Pages context
+    let apiKey = process.env?.SHOPIFY_API_KEY || globalThis.SHOPIFY_API_KEY || globalThis.env?.SHOPIFY_API_KEY;
+    let apiSecret = process.env?.SHOPIFY_API_SECRET || globalThis.SHOPIFY_API_SECRET || globalThis.env?.SHOPIFY_API_SECRET;
+    let appUrl = process.env?.SHOPIFY_APP_URL || globalThis.SHOPIFY_APP_URL || globalThis.env?.SHOPIFY_APP_URL;
+    let scopes = process.env?.SCOPES || globalThis.SCOPES || globalThis.env?.SCOPES;
+    let hmacSecret = process.env?.SESSION_HMAC_SECRET || globalThis.SESSION_HMAC_SECRET || globalThis.env?.SESSION_HMAC_SECRET;
     
-    const apiKey = env.SHOPIFY_API_KEY;
-    const apiSecret = env.SHOPIFY_API_SECRET || env.SHOPIFY_API_SECRET_KEY;
-    const appUrl = env.SHOPIFY_APP_URL;
+    // Log what we found for debugging
+    console.log('Shopify app initialization - Environment check:', {
+      apiKey: apiKey ? 'FOUND' : 'MISSING',
+      apiSecret: apiSecret ? 'FOUND' : 'MISSING',
+      appUrl: appUrl || 'MISSING',
+      scopes: scopes || 'MISSING',
+      hmacSecret: hmacSecret ? 'FOUND' : 'MISSING',
+      processEnvExists: typeof process !== 'undefined' && process.env,
+      globalThisEnv: globalThis.env ? 'EXISTS' : 'NOT EXISTS'
+    });
     
     // Validate required environment variables
     if (!apiKey) {
@@ -150,7 +161,7 @@ function initializeShopify() {
       apiKey: apiKey,
       apiSecretKey: apiSecret,
       apiVersion: ApiVersion.January25,
-      scopes: env.SCOPES?.split(",") || [],
+      scopes: scopes?.split(",") || [],
       appUrl: appUrl,
       authPathPrefix: "/auth",
       sessionStorage: new D1SessionStorage(),
@@ -159,8 +170,8 @@ function initializeShopify() {
         unstable_newEmbeddedAuthStrategy: true,
         removeRest: true,
       },
-      ...(env.SHOP_CUSTOM_DOMAIN
-        ? { customShopDomains: [env.SHOP_CUSTOM_DOMAIN] }
+      ...(process.env?.SHOP_CUSTOM_DOMAIN || globalThis.SHOP_CUSTOM_DOMAIN
+        ? { customShopDomains: [process.env?.SHOP_CUSTOM_DOMAIN || globalThis.SHOP_CUSTOM_DOMAIN] }
         : {}),
     });
   }
