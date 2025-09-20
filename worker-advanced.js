@@ -50,13 +50,23 @@ async function saveSession(db, session) {
 }
 
 async function getSession(db, shop) {
+  // First try to get OAuth session with real access token
   const result = await db.prepare(`
+    SELECT * FROM sessions 
+    WHERE shop = ? AND access_token IS NOT NULL AND access_token NOT LIKE 'eyJ%'
+    ORDER BY created_at DESC 
+    LIMIT 1
+  `).bind(shop).first();
+  
+  if (result) return result;
+  
+  // Fallback to any session
+  return await db.prepare(`
     SELECT * FROM sessions 
     WHERE shop = ? 
     ORDER BY created_at DESC 
     LIMIT 1
   `).bind(shop).first();
-  return result;
 }
 
 // Shopify GraphQL query function
@@ -270,14 +280,29 @@ async function handleAuthCallback(request, env) {
 async function handleApp(request, env) {
   const url = new URL(request.url);
   const shop = url.searchParams.get('shop');
+  const sessionToken = url.searchParams.get('id_token'); // JWT session token from Shopify
+  const hmac = url.searchParams.get('hmac');
+  const embedded = url.searchParams.get('embedded') === '1';
   
   if (!shop) {
     return new Response('Missing shop parameter', { status: 400 });
   }
   
+  // If we have a session token from Shopify admin (embedded app)
+  // This indicates the app is loaded in Shopify admin, but we still need the OAuth access token
+  let isEmbeddedWithSession = false;
+  if (sessionToken && embedded) {
+    isEmbeddedWithSession = true;
+    // Note: The session token (JWT) is different from the OAuth access token
+    // We'll check if we have a valid OAuth token stored for this shop
+  }
+  
   // Get session from D1
   const session = await getSession(env.DB, shop);
   const hasSession = !!session?.access_token;
+  
+  // Check if session is expired
+  const isExpired = session?.expires_at && (session.expires_at < Math.floor(Date.now() / 1000));
   
   const html = `
     <!DOCTYPE html>
@@ -357,12 +382,23 @@ async function handleApp(request, env) {
       <div class="container">
         <h1>Shopify Store Details</h1>
         <div id="shop-details" class="shop-details">
-          ${hasSession ? '<div class="loading">Loading shop details...</div>' : '<div class="error">No active session. Please reinstall the app.</div>'}
+          ${isExpired ? 
+            '<div class="error">Session expired. Please reload the page to refresh your session.</div>' : 
+            hasSession ? 
+              '<div class="loading">Loading shop details...</div>' : 
+              isEmbeddedWithSession ? 
+                '<div class="error">App needs to be authorized. Please click the button below to complete setup.</div>' :
+                embedded ?
+                  '<div class="error">Session not found. Please reload the app from Shopify admin.</div>' :
+                  '<div class="error">No active session. Please install the app first.</div>'
+          }
         </div>
-        ${!hasSession ? `<a href="/auth/shopify?shop=${shop}" class="auth-button">Authenticate with Shopify</a>` : ''}
+        ${!hasSession && !embedded ? `<a href="/auth/shopify?shop=${shop}" class="auth-button">Authenticate with Shopify</a>` : ''}
+        ${!hasSession && isEmbeddedWithSession ? `<a href="/auth/shopify?shop=${shop}" class="auth-button" target="_top">Complete App Setup</a>` : ''}
+        ${(isExpired || (!hasSession && embedded && !isEmbeddedWithSession)) ? '<button onclick="window.location.reload()" class="auth-button">Reload Page</button>' : ''}
       </div>
       
-      ${hasSession ? `
+      ${hasSession && !isExpired ? `
       <script>
         const shop = '${shop}';
         
