@@ -29,7 +29,8 @@
       "Bash(./setup-cloudflare.sh:*)",
       "Bash(echo:*)",
       "Bash(wrangler dev:*)",
-      "Bash(wrangler deploy:*)"
+      "Bash(wrangler deploy:*)",
+      "Bash(wrangler d1 execute:*)"
     ],
     "deny": [],
     "ask": []
