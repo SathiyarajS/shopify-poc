@@ -13,7 +13,16 @@
       "Bash(shopify app:*)",
       "Bash(git push:*)",
       "Bash(curl:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run setup:*)",
+      "Bash(npm install:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:shopify.dev)",
+      "WebSearch",
+      "WebFetch(domain:e01a52d8.shopify-poc.pages.dev)",
+      "Bash(openssl rand:*)"
     ],
     "deny": [],
     "ask": []

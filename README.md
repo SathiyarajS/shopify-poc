@@ -1,19 +1,10 @@
 # Shopify App Template - Remix
 
-This project now targets the Cloudflare Pages + Workers stack for authentication and API traffic. Rather than relying on Supabase, Shopify OAuth handshakes, embedded session issuance, and Admin GraphQL proxying run inside Pages Functions backed by Cloudflare D1.
+This is a template for building a [Shopify app](https://shopify.dev/docs/apps/getting-started) using the [Remix](https://remix.run) framework.
 
-- Cloudflare secrets:
-  - `SHOPIFY_API_KEY`
-  - `SHOPIFY_API_SECRET`
-  - `APP_URL` (e.g. `https://your-app.pages.dev`)
-  - `SESSION_HMAC_SECRET` (random 32+ byte secret used to sign short-lived session tokens)
-- D1 binding `DB` must point to a database provisioned via `wrangler d1 create`.
-- Run `wrangler d1 migrations apply shopify_poc` (or the actual DB name) to apply the schema in `migrations/0001_init.sql` before using the app.
-- OAuth callback lives at `/auth/shopify/callback` and stores install metadata in `app_install_state`.
-- The React client calls `/api/session/refresh` to obtain signed session tokens and `/api/shopify/graphql` proxies requests to the Admin API using the stored merchant token.
-- Natural-language planning is served from `/api/plan`, which validates requests/responses with Zod schemas (`shared/planning/schemas.ts`) and currently handles price, tag, inventory, and status intents with clarify codes for ambiguous input.
+Rather than cloning this repo, you can use your preferred package manager and the Shopify CLI with [these steps](https://shopify.dev/docs/apps/getting-started/create).
 
-Visit the [`shopify.dev` documentation](https://shopify.dev/docs/api/shopify-app-remix) for general Remix app guidance, but note that this project diverges from the stock template for auth/storage.
+Visit the [`shopify.dev` documentation](https://shopify.dev/docs/api/shopify-app-remix) for more details on the Remix app package.
 
 ## Quick start
 

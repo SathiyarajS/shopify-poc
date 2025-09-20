@@ -1,7 +1,8 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "ce8bab18555211f12e95867a110eeaec"
-name = "test1"
+# Using previous working client_id temporarily
+client_id = "5810fe1357c5113bec8e8dec0ed9e374"
+name = "poc-v2"
 application_url = "https://shopify-poc.pages.dev"
 embedded = true
 
@@ -9,7 +10,7 @@ embedded = true
 automatically_update_urls_on_dev = true
 
 [webhooks]
-api_version = "2025-07"
+api_version = "2025-10"
 
   [[webhooks.subscriptions]]
   topics = [ "app/uninstalled" ]
@@ -21,9 +22,7 @@ api_version = "2025-07"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = ""
-optional_scopes = [ ]
-use_legacy_install_flow = false
+scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://shopify-poc.pages.dev/auth/shopify/callback" ]
+redirect_urls = [ "https://shopify-poc.pages.dev/api/auth", "https://shopify-poc.pages.dev/auth/shopify/callback" ]
